@@ -1,0 +1,156 @@
+* Core Context Diagram
+Figure 1 shows the context in which the Argus core components exist.
+
+#+begin_src plantuml :file context.png
+caption Figure 1: High level context
+title Application Structure
+
+legend top right
+<i>Layers Legend</i>
+
+| |= Layer Name |
+|<back:#B0D6F9>    </back> | Frameworks and Drivers |
+|<back:#F2A49F>    </back>| Use Cases |
+|<back:#F9F8BF>    </back>| Entities |
+|<back:#B7FAC0>    </back>| Interface Adapters |
+endlegend
+
+[Main (UI)] <<app>> #B0D6F9
+[Firebase] <<framework>> #B0D6F9
+[Core] <<framework>> #F2A49F
+[Authentication] <<framework>> #B7FAC0
+[Persistence] <<framework>> #B7FAC0
+[Test] <<temp>> #Cornsilk
+[CoreAuth] <<framework>> #F2A49F
+[CorePersist] <<framework>> #F2A49F
+[CoreXXX] <<framework>> #F2A49F
+[CoreData] <<framework>> #F9F8BF
+
+[Firebase] <-- [Authentication]
+[Firebase] <-- [Persistence]
+[Main (UI)] --> [Core]
+note left : Umbrella framework
+[Authentication] --> [Core]
+[Persistence] --> [Core]
+[Core] --> [CoreAuth]
+[Core] --> [CoreXXX]
+note bottom : TBD
+[Core] --> [CorePersist]
+[CoreAuth] <.. [Test]
+[CorePersist] <.. [Test]
+[CoreData] <.. [Test]
+note left : Temp TDD\nsupport classes
+[CoreAuth] --> [CoreData]
+[CorePersist] --> [CoreData]
+#+end_src
+
+#+RESULTS:
+[[file:context.png]]
+* Authentication Package/Framework Diagram
+The authentication interfaces and classes are captured in the "authentication" package which is implemented as as a
+framework in a SiX environment. Figure 2 captures the basic design and the facilities provided.
+#+begin_src plantuml :file core-authentication.png
+caption Figure 2 Core Authentication
+title Application Core Authentication Package/Framework
+
+
+package Test <<test>> #Cornsilk {
+  class AccountImpl {
+    init()
+  }
+}
+
+package authentication <<framework>> #Cornsilk {
+  interface Authenticator {
+    register(email: String, password1: String, password2: String) : String
+    login(email: String, password: String) : String
+    logout(email: String) : String
+  }
+  note top : function return values are error\nmessages; empty string means\nno error, or success, a diagnostic\nmessage otherwise.
+  class AuthenticatorImpl <<interactor>> {
+    init(Authenticator)
+  }
+  interface Account <<entity>> {
+    +id: Long
+    edit(account: Account)
+  }
+  Authenticator <-- AuthenticatorImpl
+  AuthenticatorImpl <-- Account
+  AccountImpl --|> Account
+}
+
+#+end_src
+
+#+RESULTS:
+[[file:core-authentication.png]]
+* Other stuff (likely stale)
+** Class diagram
+#+begin_src plantuml :file watchlist.png
+package "core" #DDDDDD {
+  interface Video
+  class ActiveVideo
+
+  interface VideoList
+  class WatchList<Video>
+
+}
+#+end_src
+
+#+RESULTS:
+[[file:watchlist.png]]
+
+** Use case diagram
+#+begin_src plantuml :file tryout.png
+  Alice -> Bob: synchronous call
+  Alice ->> Bob: asynchronous call
+#+end_src
+
+#+RESULTS:
+[[file:tryout.png]]
+
+** Package diagram
+* SO Structuring Question
+** SO problems to solve
+1) How does one include a png file in a question?
+There is an option to upload images when entering a question. Look for the clipart icon, it should look similar to ones
+on Google Drive. -- Bryan
+P.S. My comments are in reply to the text that precedes it.
+
+
+** Title
++ How to effectively structure a non-trivial, medium size Swift-iOS-Xcode (SiX) application cleanly.
+** Question
++ Over the past few months I have been ramping up to develop a streaming TV watching app for iOS such that it is
+  structured cleanly, as described by the [[https://8thlight.com/blog/uncle-bob/2012/08/13/the-clean-architecture.html][Clean Architecture]] material from Uncle Bob Martin, with interdependent modules
+  structured in a handful of layers.
++ To ramp up, I have been studying SiX using various tutorials, workshops, the Stanford CS193P course and attending
+  local Swift meet-ups, not to mention studying many, many examples via Stack Overflow and GitHub.
++ The initial use cases supported are: register a User, a User logs in, and a User logs out.
++ Given this context, I want to decide on the mechanism to use to structure the source code. I lean towards using a
+  handful of modules, one app module and as many framework modules as makes sense to a SiX developer with experience
+  developing apps using a modular approach.
++ One module per use case would be one extreme and one single (app) module would be the other extreme (representing the
+  typical SiX application, I believe) and will not provide the flexibility in independent development, testing and
+  deployment that the clean world of Uncle Bob strives to achieve.
++ So this leads to the use of an "umbrella" arrangement as shown.
+  [embed the figure]
++ While Apple does not recommend using an umbrella framework (for good reasons) it works here because the frameworks do
+  not make sense to use in an arbitrary application. They only make sense for one particular, well controlled app
+  developed by a single team.
++ There appears to be two choices for organizing the various frameworks:
+1) The unmanaged umbrella pattern described in, at least, the following (provide a set of links) or
+2) An umbrella pattern managed by a dependency manager (either Carthage or Cocoa Pods).
++ First question: can anyone cite experiences where both choices were tried and one proved definitely better than the
+  other, along with well reasoned arguments why?
++ Second question, for the Clean Architecture experts: my expectation after watching, listening to and reading material
+  on Clean Architecure, was that I would be able to produce a structure that clearly shows the nature of the app, much
+  as a church, library or bank blueprints clearly show what that associated building is for. That goal has been a dismal
+  failure for me. Where have I gone wrong and what do I need to do to achieve the Holy Grail of Clean Architecture?
+
+* Xcode Project Setup
+1) Create a GitHub project ArgusCoreAuthSiX for Swift with an initial README.md file.
+2) Clone the base project to the development system.
+3) Create a Cocoa Touch Framework, ArgusCoreAuth, on top of the initial git clone from step 2).
+4) Remove errors and run the tests (CMD-U) to verify the project is basically sane. Should have no errors.
+5) Remove all test code to prepare for start of TDD.
+6) Commit baseline code and notes, push to master.
