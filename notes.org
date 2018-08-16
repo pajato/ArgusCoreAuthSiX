@@ -153,4 +153,7 @@ P.S. My comments are in reply to the text that precedes it.
 3) Create a Cocoa Touch Framework, ArgusCoreAuth, on top of the initial git clone from step 2).
 4) Remove errors and run the tests (CMD-U) to verify the project is basically sane. Should have no errors.
 5) Remove all test code to prepare for start of TDD.
-6) Commit baseline code and notes, push to master.
+6) Commit baseline code and notes, push to master, generate PR and merge to master.
+
+* TDD
+** Generate simple tests ...
